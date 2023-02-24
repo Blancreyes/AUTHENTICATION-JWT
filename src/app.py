@@ -31,6 +31,10 @@ db.init_app(app)
 CORS(app)
 setup_admin(app)
 
+# Setup the Flask-JWT-Extended extension
+app.config["JWT_SECRET_KEY"] = "super-secret"  # Change this!
+jwt = JWTManager(app)
+
 # Handle/serialize errors like a JSON object
 @app.errorhandler(APIException)
 def handle_invalid_usage(error):
@@ -41,6 +45,7 @@ def handle_invalid_usage(error):
 def sitemap():
     return generate_sitemap(app)
 
+#Generate endpoints
 @app.route('/user', methods=['POST'])
 def create_user():
     #se debe pasar la información a formato json
@@ -76,7 +81,6 @@ def all_users_info():
         "msg": "OK",
         "result":result
     }
-
     return jsonify(response_body), 200
 
 @app.route('/user/<int:user_id>', methods=['GET'])
@@ -89,111 +93,6 @@ def get_user_info(user_id):
         "msg": "OK",
         "result":user_info_query.serialize()
     }
-
-    return jsonify(response_body), 200
-
-#Endpoints de Character
-@app.route('/character', methods=['POST'])
-def create_character():
-    #se debe pasar la información a formato json
-    request_body=request.json
-
-    # se verifica si el usuario ya existe
-    character_info_query=Character.query.filter_by(character_name=request_body["name"]).first()
-
-    #Condicional, para crear el usuario si este no existe (verificado en query anterior)
-    if character_info_query is None:
-        character = Character(
-            character_name=request_body["name"],
-            character_birth_year=request_body["birth_year"],
-            hair_color=request_body["hair_color"], 
-            height=request_body["height"],
-            mass=request_body["mass"],
-            gender=request_body["gender"]
-            )
-        db.session.add(character)
-        db.session.commit()
-        response_body = {
-            "msg": "Character successfully created", 
-        }
-        return jsonify(response_body), 200
-    
-    else: 
-        return jsonify("This Character already exists"), 400
-
-@app.route('/character', methods=['GET'])
-def all_characters_info():
-    #Query para regresar la info de todos los characters
-    characters_query=Character.query.all()
-    result=list(map(lambda item: item.serialize(), characters_query))
-    
-    response_body = {
-        "msg": "OK",
-        "result":result
-    }
-
-    return jsonify(response_body), 200
-
-@app.route('/character/<int:character_id>', methods=['GET'])
-def get_character_info(character_id):
-
-    #Query para regresar la info de character especifico
-    character_info_query = Character.query.filter_by(id=character_id).first()
-        
-    response_body = {
-        "msg": "OK",
-        "result":character_info_query.serialize()
-    }
-
-    return jsonify(response_body), 200
-
-#Endpoints de Planets
-@app.route('/planets', methods=['POST'])
-def create_planet():
-    request_body=request.json
-
-    planet_info_query=Planets.query.filter_by(planet_name=request_body["name"]).first()
-
-    if planet_info_query is None:
-        planets = Planets(
-            planet_name=request_body["name"],
-            climate=request_body['climate'],
-            population=request_body['population'] ,
-            orbital_period=request_body['orbital_period'],
-            diameter=request_body['diameter'],
-            )
-        db.session.add(planets)
-        db.session.commit()
-        response_body = {
-            "msg": "Planet successfully created", 
-        }
-        return jsonify(response_body), 200
-    else: 
-        return jsonify("This Planet already exists"), 400
-
-
-@app.route('/planets/<int:planet_id>', methods=['GET'])
-def get_planet_info(planet_id):
-    planet_info_query=Planets.query.filter_by(id=planet_id).first()
-
-    response_body={
-        "msg":"OK",
-        "result":planet_info_query.serialize()
-    }
-
-    return jsonify(response_body), 200
-
-@app.route('/planets', methods=['GET'])
-def all_planet_info():
-    #Query para regresar la info de todos los characters
-    planets_query=Planets.query.all()
-    result=list(map(lambda item: item.serialize(), planets_query))
-    
-    response_body = {
-        "msg": "OK",
-        "result":result
-    }
-
     return jsonify(response_body), 200
 
 # Create a route to authenticate your users and return JWTs. The
@@ -210,11 +109,6 @@ def login():
 
     access_token = create_access_token(identity=email)
     return jsonify(access_token=access_token)
-
-# Setup the Flask-JWT-Extended extension
-app.config["JWT_SECRET_KEY"] = "super-secret"  # Change this!
-jwt = JWTManager(app)
-
 
 
 # this only runs if `$ python src/app.py` is executed
