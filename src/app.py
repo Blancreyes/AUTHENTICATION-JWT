@@ -8,7 +8,7 @@ from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, User, Character, Planets
+from models import db, User
 from flask_jwt_extended import create_access_token
 from flask_jwt_extended import get_jwt_identity
 from flask_jwt_extended import jwt_required
@@ -80,17 +80,17 @@ def all_users_info():
     }
     return jsonify(response_body), 200
 
-@app.route('/user/<int:user_id>', methods=['GET'])
-def get_user_info(user_id):
+# @app.route('/user/<int:user_id>', methods=['GET'])
+# def get_user_info(user_id):
 
-    #Query para regresar la info de user especifico
-    user_info_query = User.query.filter_by(id=user_id).first()
+#     #Query para regresar la info de user especifico
+#     user_info_query = User.query.filter_by(id=user_id).first()
         
-    response_body = {
-        "msg": "OK",
-        "result":user_info_query.serialize()
-    }
-    return jsonify(response_body), 200
+#     response_body = {
+#         "msg": "OK",
+#         "result":user_info_query.serialize()
+#     }
+#     return jsonify(response_body), 200
 
 # Create a route to authenticate your users and return JWTs. The
 # create_access_token() function is used to actually generate the JWT.
